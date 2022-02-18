@@ -2,14 +2,14 @@ import argparse
 import csv
 import os
 
-def DictionaryUniqueSpecies(file_name, min_reads): 
+def DictionaryUniqueSpecies(file_name, min_reads, delim): 
 	"""This function creates a dictionary with all the unique species. 
 	First it counts how many reads there are in the rows, then it 
 	counts how many fragments for species there exists in the table
 	"""
 	unique_species = {}
 	with open(file_name) as csv_file:
-	    csv_reader = csv.reader(csv_file, delimiter=';')
+	    csv_reader = csv.reader(csv_file, delimiter=delim)
 	    header = next(csv_reader) # header
 	    genus_species_index= len(header) - 1
 
@@ -43,7 +43,7 @@ def CountSpeciesWithoutSP(dictionary_species):
 			species.append(key)
 	return species
 
-def create_file(file_table, folder, name_species, min_reads):
+def create_file(file_table, folder, name_species, min_reads, delim):
 	if (name_species[-3:] == "sp."):
 		name_file = os.path.join(folder, "%s.csv"%name_species[:-1])
 	else:
@@ -51,7 +51,7 @@ def create_file(file_table, folder, name_species, min_reads):
 	print (name_file, " has been created")
 	new_file = open(name_file, "w", newline='')
 	with open(file_table) as csv_file:
-	    csv_reader = csv.reader(csv_file, delimiter=';')
+	    csv_reader = csv.reader(csv_file, delimiter=delim)
 	    csv_writer = csv.writer(new_file)
 	    header = next(csv_reader) # header
 	    genus_species_index= len(header) - 1
@@ -74,7 +74,8 @@ parser.add_argument("-sp", "--species", help="deleating sp.", action = "store_tr
 
 args = parser.parse_args()
 
-unique_species = DictionaryUniqueSpecies(args.file_name, args.min_reads)
+delim = ";"
+unique_species = DictionaryUniqueSpecies(args.file_name, args.min_reads, delim)
 species = CountSpeciesWithoutSP(unique_species) if args.species else CountSpecies(unique_species)
 print ("You will create %s files" %(len(species)))
 
@@ -92,4 +93,4 @@ if proceed:
     
     # creating the files
     for sp in species:
-    	create_file(args.file_name, dirName, sp, args.min_reads)
+    	create_file(args.file_name, dirName, sp, args.min_reads, delim)
