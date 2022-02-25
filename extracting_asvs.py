@@ -72,13 +72,20 @@ parser = argparse.ArgumentParser()
 parser.add_argument("file_name", type=str, help="name of the file")
 parser.add_argument("min_reads", type=int, help="minimum number of reads in the row")
 parser.add_argument("-sp", "--species", help="deleating sp.", action = "store_true")
+parser.add_argument("-sc", "--semicolon", help="delimiter is semicolon (default = comma)", action = "store_true")
+
 
 args = parser.parse_args()
 
-delim = ";"
+delim = ";" if args.semicolon else ","
+
 unique_species = DictionaryUniqueSpecies(args.file_name, args.min_reads, delim)
 species = CountSpeciesWithoutSP(unique_species) if args.species else CountSpecies(unique_species)
-print ("You will create %s files" %(len(species)))
+if (len(species) == 0):
+	print ("You will create 0 files (check -sc to modify the delimiter)")
+else:
+	print ("You will create %s files" %(len(species)))
+
 
 proceed = True if input("Do you want to proceed? Type y/n") in ["y", "Y"] else False
 
