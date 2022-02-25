@@ -2,7 +2,6 @@ import argparse
 import csv
 import os
 
-
 def DictionaryUniqueSpecies(file_name, min_reads, delim): 
 	"""This function creates a dictionary with all the unique species. 
 	First it counts how many reads there are in the rows, then it 
