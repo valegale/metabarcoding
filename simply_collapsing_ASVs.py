@@ -27,7 +27,7 @@ def writing_collapsed_file(file_name):
 	order_species = sorted(unique_species.keys(), key=lambda k: sum(unique_species[k]), reverse=True)
 
 	#writing file
-	newfile_name = "seqtab_nonchim_id_collapsed.csv"
+	newfile_name = "results/%s_collapsed.csv"%os.path.basename(file_name).split('.')[0]
 	new_file = open(newfile_name, "w", newline='')
 	csv_writer = csv.writer(new_file)
 	csv_writer.writerow(header[1:-1] + ["Taxon"])

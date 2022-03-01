@@ -1,3 +1,7 @@
+'''
+Use these functions with a csv file where the ASV numbers are inserted as a second column
+'''
+
 import csv
 import numpy as np
 import argparse

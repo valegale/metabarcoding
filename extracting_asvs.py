@@ -1,3 +1,7 @@
+'''
+Use these functions with a csv file where the ASV numbers are inserted as a second column
+'''
+
 import argparse
 import csv
 import os
@@ -91,7 +95,7 @@ proceed = True if input("Do you want to proceed? Type y/n") in ["y", "Y"] else F
 if proceed:
 
     # Create target Directory
-    dirName = "results"
+    dirName = "results/%s"%os.path.basename(args.file_name).split('.')[0]
     try:
     	os.mkdir(dirName)
     	print("Directory " , dirName ,  " Created ") 
