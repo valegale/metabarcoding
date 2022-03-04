@@ -7,6 +7,7 @@ library(gridExtra)
 #insert here the path to the results folder
 # ex. path = "C:/.../results"
 path <- "C:/metabarcoding/results/"
+path <- "/home/valentina_galeone/Desktop/github_rep/metabarcoding/results/"
 
 #insert name of the directory with all ASVs separated in different files 
 #this directory is obtained from extracting_ASVs.py. Important: the second 
@@ -16,7 +17,9 @@ results_dir <- "seqtab_nonchim_id_ASV/"
 
 path_result <- paste(path, results_dir, sep = "")
 setwd(path_result)
-
+ 
+path_plots <- paste(path, "plots/", sep = "")
+dir.create(path_plots)
 path_plots <- paste(path, "plots/", results_dir, sep = "")
 dir.create(path_plots)
 
