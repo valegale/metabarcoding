@@ -1,6 +1,7 @@
 library(reshape2)
 library(ggplot2)
 library(gridExtra)
+library(dplyr)
 
 # PLOTTING THE ENTIRE DIRECTORY. ONE FILE FOR EACH SPECIES ####
 
@@ -157,7 +158,6 @@ for (file_name in file_list){
   r_n <- file_csv[,1]
   
   df1 <- data.frame(file_csv[,2:n_col], "ASV_ID" = r_n)
-  
   df2 <- melt(df1,"ASV_ID")
   colnames(df2) <- c("ASV_ID", "SAMPLE_NAME", "value")
   df_dates <- merge(df2, sample_dates, by.x = "SAMPLE_NAME")
@@ -178,6 +178,7 @@ for (file_name in file_list){
 
 
 #Ordered and normalized ####
+
 #insert here the path to the results folder
 # ex. path = "C:/.../results"
 path <- "C:/metabarcoding/results/"
@@ -195,11 +196,13 @@ setwd(path_result)
 
 # insert a file with the one column with the name of the samples, and one column with dates
 label_file <- "/home/valentina_galeone/Desktop/github_rep/metabarcoding/Data/sample_labels_mugg.csv" #muggelsee
+label_file <- "/home/valentina_galeone/Desktop/github_rep/metabarcoding/Data/sample_labels_poland.csv" #poland
 #change here the format of the date 
-format_dates = "%d.%m.%y" 
+format_dates = "%d/%m/%y" 
 
 
-sample_dates <- read.csv(file=label_file, header=TRUE, sep = ",") 
+sample_dates <- read.csv(file=label_file, header=TRUE, sep = ",") %>% select(c(SAMPLE_NAME, Date))
+
 path_plots <- paste(path, "plots/", sep = "")
 dir.create(path_plots)
 path_plots <- paste(path, "plots/", results_dir,"_normalized_ordered/", sep = "")
@@ -209,12 +212,12 @@ file_list <- list.files()
 ggplot_list <- list()
 i = 1
 for (file_name in file_list){
+  file_name <- "Ankyra_judayi.csv"  
   file_csv <- read.csv(file=paste(path_result, file_name, sep = ""), header=TRUE, row.names = 1)
   n_col <- ncol(file_csv)-9
   n_row <- nrow(file_csv)
   r_n <- file_csv[,1]
   normalized_table <- t(apply(file_csv[,2:n_col], 1, function(x)(x-min(x))/(max(x)-min(x))))
-  
   
   df1_n <- data.frame(normalized_table, "ASV_ID" = r_n)
   
@@ -237,8 +240,71 @@ for (file_name in file_list){
 }
 
 
-#TO DO ####
-#create groups and plots separatedly (another file (or colum? specifyng the "groups"))
+# ORDERING + SEPARATED PLOTS ####
+#ORDERING by Order column and making groups with Group column
 
-#TO DO ####
-#create a "test" folder. or even a rmarkdown with only one species
+#insert here the path to the results folder
+# ex. path = "/.../results"
+
+path <- "C:/metabarcoding/results/"
+path <- "/home/valentina_galeone/Desktop/github_rep/metabarcoding/results/"
+
+#insert name of the directory with all ASVs separated in different files 
+#this directory is obtained from extracting_ASVs.py. Important: the second 
+#column should be filled with the ASVs ID
+
+results_dir <- "poland_seqtab_ASV"
+results_dir <- "seqtab_nonchim_id_ASV"
+
+path_result <- paste(path, results_dir, "/", sep = "")
+setwd(path_result)
+
+# insert a file with the one column with the name of the samples, and one column with dates
+label_file <- "/home/valentina_galeone/Desktop/github_rep/metabarcoding/Data/sample_labels_mugg.csv" #muggelsee
+label_file <- "/home/valentina_galeone/Desktop/github_rep/metabarcoding/Data/sample_labels_poland.csv" #poland
+#change here the format of the date 
+format_dates = "%d/%m/%y" 
+
+
+sample_order <- read.csv(file=label_file, header=TRUE, sep = ",") %>% select(c(SAMPLE_NAME, Group, Order))
+
+path_plots <- paste(path, "plots/", sep = "")
+dir.create(path_plots)
+path_plots <- paste(path, "plots/", results_dir,"_normalized_grouped/", sep = "")
+dir.create(path_plots)
+
+file_list <- list.files()
+i = 1
+for (file_name in file_list){
+  ggplot_list <- list()
+  file_csv <- read.csv(file=paste(path_result, file_name, sep = ""), header=TRUE, row.names = 1)
+  n_col <- ncol(file_csv)-9
+  n_row <- nrow(file_csv)
+  r_n <- file_csv[,1]
+  df1 <- data.frame(file_csv[,2:n_col], "ASV_ID" = r_n)
+  df2 <- melt(df1,"ASV_ID")
+  colnames(df2) <- c("ASV_ID", "SAMPLE_NAME", "value")
+  df_group <- merge(df2, sample_order, by.x = "SAMPLE_NAME")
+  all_df <- split(df_group, df_group$Group)
+  
+  i <- 1
+  for (single_df in all_df){
+    g <- ggplot(data=single_df, aes(x=Order, y=value, group = ASV_ID, color=ASV_ID)) +
+      geom_line() + theme_bw() + 
+      theme(axis.text.x = element_text(angle = 45, hjust=1)) +
+      ylab("nr of reads") +
+      xlab("") +
+      theme(legend.position = "right") + theme(legend.title = element_blank())    
+    ggplot_list[[i]] <- g
+    i <- i + 1 
+  }
+  name_file <- paste(path_plots, tools::file_path_sans_ext(file_name), ".png", sep = "")
+  ggsave(paste(name_file, ".png", sep = ""), do.call("arrangeGrob", c(ggplot_list, ncol = 1)))
+  printing <- paste("saving plot for ", tools::file_path_sans_ext(file_name), sep = "")
+  print(printing)
+}
+
+
+
+´#TO DO ####
+#create a "test" folder. or even a rmarkdown with only one species´
