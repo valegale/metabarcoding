@@ -13,21 +13,21 @@ def DictionaryUniqueSpecies(file_name, min_reads, delim):
 	"""
 	unique_species = {}
 	with open(file_name) as csv_file:
-	    csv_reader = csv.reader(csv_file, delimiter=delim)
-	    header = next(csv_reader) # header
-	    genus_species_index= len(header) - 1
+		csv_reader = csv.reader(csv_file, delimiter=delim)
+		header = next(csv_reader) # header
+		genus_species_index= len(header) - 1
 
-	    for row in csv_reader:
-	    	genus_species = row[genus_species_index]
-	    	total_reads = 0
+		for row in csv_reader:
+			genus_species = row[genus_species_index]
+			total_reads = 0
 
-	    	for i in range (2,genus_species_index-7): total_reads += int(row[i])
-	    	if (genus_species!= "NA") and (total_reads >= min_reads):
-	    		if genus_species not in unique_species:
-	    			unique_species[genus_species] = 1
-	    		else: 
-	    			unique_species[genus_species] += 1
-	    return unique_species
+			for i in range (2,genus_species_index-7): total_reads += int(row[i])
+			if (genus_species!= "NA") and (total_reads >= min_reads):
+				if genus_species not in unique_species:
+					unique_species[genus_species] = 1
+				else: 
+					unique_species[genus_species] += 1
+		return unique_species
 
 def CountSpecies(dictionary_species):
 	"""Count the species with more than 1 fragment
@@ -55,17 +55,17 @@ def create_file(file_table, folder, name_species, min_reads, delim):
 	print (name_file, " has been created")
 	new_file = open(name_file, "w", newline='')
 	with open(file_table) as csv_file:
-	    csv_reader = csv.reader(csv_file, delimiter=delim)
-	    csv_writer = csv.writer(new_file)
-	    header = next(csv_reader) # header
-	    genus_species_index= len(header) - 1
-	    csv_writer.writerow(header)
-	    for row in csv_reader:
-	    	total_reads = 0
-	    	for i in range (2,genus_species_index-7): total_reads += int(row[i])
-	    	
-	    	if (row[genus_species_index] == name_species) and (total_reads >= min_reads):
-	    		csv_writer.writerow(row)
+		csv_reader = csv.reader(csv_file, delimiter=delim)
+		csv_writer = csv.writer(new_file)
+		header = next(csv_reader) # header
+		genus_species_index= len(header) - 1
+		csv_writer.writerow(header)
+		for row in csv_reader:
+			total_reads = 0
+			for i in range (2,genus_species_index-7): total_reads += int(row[i])
+			
+			if (row[genus_species_index] == name_species) and (total_reads >= min_reads):
+				csv_writer.writerow(row)
 	new_file.close()
 	return 
 
@@ -93,15 +93,20 @@ else:
 proceed = True if input("Do you want to proceed? Type y/n") in ["y", "Y"] else False
 
 if proceed:
-
-    # Create target Directory
-    dirName = "results/%s"%os.path.basename(args.file_name).split('.')[0]
-    try:
-    	os.mkdir(dirName)
-    	print("Directory " , dirName ,  " Created ") 
-    except FileExistsError:
-    	print("Directory " , dirName ,  " already exists")
-    
-    # creating the files
-    for sp in species:
-    	create_file(args.file_name, dirName, sp, args.min_reads, delim)
+	try:
+		os.mkdir("results")
+	except:
+		print("Result directory already exists")
+	
+	# Create target Directory
+	dirName = "results/%s"%os.path.basename(args.file_name).split('.')[0]
+	
+	try:
+		os.mkdir(dirName)
+		print("Directory " , dirName ,  " Created ") 
+	except FileExistsError:
+		print("Directory " , dirName ,  " already exists")
+	
+	# creating the files
+	for sp in species:
+		create_file(args.file_name, dirName, sp, args.min_reads, delim)
