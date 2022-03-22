@@ -1,5 +1,6 @@
 '''
-Use these functions with a csv file where the ASV numbers are inserted as a second column
+Use these functions with a csv file where the ASV IDs are inserted in the second column.
+ASV_IDs can be generated with adding_ASV_ID.py
 '''
 
 import argparse
@@ -70,7 +71,6 @@ def create_file(file_table, folder, name_species, min_reads, delim):
 	return 
 
 #parsing
-
 parser = argparse.ArgumentParser()
 parser.add_argument("file_name", type=str, help="name of the file")
 parser.add_argument("min_reads", type=int, help="minimum number of reads in the row")

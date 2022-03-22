@@ -1,5 +1,6 @@
 '''
-Use these functions with a csv file where the ASV numbers are inserted as a second column
+Use these functions with a csv file where the ASV IDs are inserted in the second column.
+ASV_IDs can be generated with adding_ASV_ID.py
 '''
 
 import csv
@@ -60,7 +61,7 @@ def statistics(dictionary_species):
 		frequency = np.append(frequency, unique_species[key])
 		if (unique_species[key] > 1):
 			count += 1
-			if (key[-3:] == "sp."):
+			if (key[-3:] != "sp."):
 				count_sp += 1
 
 	return frequency, count, count_sp
@@ -103,10 +104,12 @@ def minimum_number_reads_vs_total_number_ASVs(file_name, delim): #default x limi
 
 def plot_frequency(frequency):
 	sns.displot(frequency, bins=np.arange(1, frequency.max() +1)).set(title='Frequency plot, number of ASVs in the same species')
+	plt.xlabel("# ASVs in one species")
 	plt.show()
 	
 def plot_frequency_multipleASVs(frequency):
 	sns.displot(frequency, bins=np.arange(2, frequency.max() +1)).set(title='Frequency plot, number of (not unique, x >= 2) ASVs in the same species')
+	plt.xlabel("# ASVs in one species")
 	plt.show()
 	
 
@@ -115,8 +118,6 @@ parser.add_argument("file_name", type=str, help="name of the file")
 parser.add_argument("min_reads", type=int, help="minimum number of reads in the row")
 parser.add_argument("-sp", "--species", help="deleating sp.", action = "store_true")
 parser.add_argument("-sc", "--semicolon", help="delimiter is semicolon (default = comma)", action = "store_true")
-
-
 args = parser.parse_args()
 
 delim = ";" if args.semicolon else ","
@@ -130,8 +131,8 @@ frequency, count, count_sp =  statistics(unique_species)
 if (str(frequency) == str([0])):
 	print ("check -sc to modify the delimiter (empty list of frequencies")
 else:
-	print ("Number of species with more than a ASV (total number of reads > %s): %s" %(args.min_reads,count))
-	print ("Number of species with more than a fragment and ending with sp. (total number of reads > %s): %s" %(args.min_reads, count_sp))
+	print ("Number of species with more than one ASV (total number of reads > %s): %s" %(args.min_reads,count))
+	print ("Number of species with more than one ASV, excluding sp. (total number of reads > %s): %s" %(args.min_reads, count_sp))
 
 	plot_frequency(frequency)
 	plot_frequency_multipleASVs(frequency)
