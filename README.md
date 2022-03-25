@@ -27,6 +27,7 @@ file_name      -   name of the file
 ## extracting_asvs.py
 This file separates in different folders all the ASVs that match to the same species. 
 **IMPORTANT** only *xxx_ASV.csv* files can be given as an input. These files have as a second column the ASV_ID and they can be obtained by the file *adding_ASV_ID.py* (read the paragraph above) from the output of DADA2 . 
+<br>
 In a folder called `results`, a new folder with the same name of the input file is created. Inside this folder every species with multiple ASVs has an individual file including all matching ASVs. 
 ASVs with only a few reads (summing over all samples) can be excluded from the results folder by inserting an abundancy threshold (minimum number of reads, *min_reads*).
 
@@ -59,7 +60,7 @@ Then, the total number of species in the file, excluding the ones where the last
 After this, two frequency plots are shown. 
 In the first one, we can have an idea of how many ASVs are generally assigned to the same species. For x=1, just a unique ASVs was associated to the species. 
 As it is likely that x=1 occurs most of the time, in the second plot the minimum value for x is 2, in this way it is possible to visualize only *not-unique* ASVs. 
-
+<br>
 Finally, two other plots are displayed. This plot analyze how the parameter *min_reads* influences the number of ASVs in the result. As this parameter varies, the number of files (third plot) and the total number of ASVs (fourth plot) change as well.   
 
 `usage` asvs_statistics.py [-h] [-sp] [-sc] file_name min_reads
@@ -76,3 +77,4 @@ min_reads    -     minimum number of reads for an ASVs (summing over all samples
 
 -sc, --semicolon  delimiter is semicolon (default = comma)
 
+---
