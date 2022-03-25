@@ -39,13 +39,13 @@ Before actually creating the files, the total number of species files is compute
 `positional arguments`: 
 
 file_name    -     name of the file
-
+<br>
 min_reads    -     minimum number of reads for an ASVs (summing over all samples)
 
 `optional arguments`:
 
 -sp, --species  -   excluding *sp.* from the results. These ASVs are only associated with a genus, not with a species (ex. *Cyclotella sp.*)
-
+<br>
 -sc, --semicolon  delimiter is semicolon (default = comma)
 
 ---
@@ -68,13 +68,14 @@ Finally, two other plots are displayed. This plot analyze how the parameter *min
 `positional arguments`: 
 
 file_name    -     name of the file
-
+<br>
 min_reads    -     minimum number of reads for an ASVs (summing over all samples)
 
 `optional arguments`:
 
 -sp, --species  -   excluding *sp.* from the results. These ASVs are only associated with a genus, not with a species (ex. *Cyclotella sp.*)
-
+<br>
 -sc, --semicolon  delimiter is semicolon (default = comma)
 
 ---
+
