@@ -1,0 +1,27 @@
+---
+title: "Testing"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(reshape2)
+library(ggplot2)
+library(gridExtra)
+library(dplyr)
+```
+
+## Inserting the data 
+```{r}
+path <- "/home/valentina_galeone/Desktop/github_rep/metabarcoding/results/"
+results_dir <- "seqtab_nonchim_id_ASV"
+path_result <- paste(path, results_dir, "/", sep = "")
+setwd(path_result)
+```
+
+## 
+```{r}
+
+
+```
+
