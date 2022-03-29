@@ -50,7 +50,6 @@ min_reads    -     minimum number of reads for an ASVs (summing over all samples
 
 ---
 
-
 ## asvs_statistics.py
 This script aims at giving an overview of the file from DADA2, in terms of number of ASVs. As in *extracting_asvs.py*, only *xxx_ASV.csv* files can be analized. 
 
@@ -78,4 +77,8 @@ min_reads    -     minimum number of reads for an ASVs (summing over all samples
 -sc, --semicolon  delimiter is semicolon (default = comma)
 
 ---
+
+## plot_directory_ASVS.R
+check **test_plots.html**
+(work in progress here)
 

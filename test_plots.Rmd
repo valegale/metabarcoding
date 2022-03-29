@@ -1,6 +1,12 @@
 ---
-title: "Testing"
-output: html_document
+title: "Sample"
+output: 
+  html_document:
+    theme: journal
+    highlight: tango
+    toc: true
+    toc_depth: 4
+    toc_float: true
 ---
 
 ```{r setup, include=FALSE}
@@ -11,7 +17,10 @@ library(gridExtra)
 library(dplyr)
 ```
 
-## Inserting the data 
+Overwiew of the plots that can be obtained with *plot_directory_ASV.R*
+
+# Inserting the data 
+Insert the results directory path in *path*, and the name of the directory in the results folder where the ASVs have been separated by species in *results_dir*. This directory is computed with the python script *extracting_asvs.py*. ´
 ```{r}
 path <- "/home/valentina_galeone/Desktop/github_rep/metabarcoding/results/"
 results_dir <- "seqtab_nonchim_id_ASV"
@@ -19,9 +28,403 @@ path_result <- paste(path, results_dir, "/", sep = "")
 setwd(path_result)
 ```
 
-## 
+Modify this variable to True if you want to normalize the plots by the value of the highest peak in the ASV. 
 ```{r}
+norm <- FALSE
+```
 
+Optionally, insert here a file where the Date is associated with the name of the samples in Dada2 output (SAMPLE_NAME). 
+
+```{r}
+label_file <- "/home/valentina_galeone/Desktop/github_rep/metabarcoding/Data/sample_labels_mugg.csv"
+format_dates = "%d.%m.%y" 
+```
+
+The label file should look like this: 
+<br>
+![](/home/valentina_galeone/Desktop/example.png)
+
+# Plotting just one species
+This chunk of code can be used to investigate one species in particular. 
+The name of the species can be inserted here:
+```{r}
+file_name <- "Aulacoseira_granulata.csv"
+```
+
+The code produce than just the single image. 
+
+```{r}
+file_csv <- read.csv(file=paste(path_result, file_name, sep = ""), header=TRUE, row.names = 1)
+n_col <- ncol(file_csv)-9
+n_row <- nrow(file_csv)
+r_n <- paste( "species", 1:n_row)
+r_n <- file_csv[,1]
+if (norm == TRUE){
+  normalized_table <- t(apply(file_csv[,2:n_col], 1, function(x)(x-min(x))/(max(x)-min(x))))
+  df1 <- data.frame(normalized_table, 
+                    "row_names" = r_n)
+} else if (norm == FALSE){
+  df1 <- data.frame(file_csv[,2:n_col], 
+                  "row_names" = r_n)
+}
+df2 <- melt(df1,"row_names")
+g <- ggplot(data=df2, aes(x=variable, y=value, group=row_names)) +
+  geom_line(aes(color=row_names))+ ylab("# reads") +
+  xlab("samples")+ theme(legend.title = element_blank(), axis.text.x = element_blank()) + ggtitle(tools::file_path_sans_ext(file_name))
+g 
+```
+
+## Normalization 
+After normalization insted, the y axis would range from 0 to 1. 
+
+```{r}
+norm <- TRUE
+```
+```{r echo=FALSE}
+file_csv <- read.csv(file=paste(path_result, file_name, sep = ""), header=TRUE, row.names = 1)
+n_col = ncol(file_csv)-9
+n_row = nrow(file_csv)
+r_n <- paste( "species", 1:n_row)
+r_n <- file_csv[,1]
+if (norm == TRUE){
+  normalized_table <- t(apply(file_csv[,2:n_col], 1, function(x)(x-min(x))/(max(x)-min(x))))
+  df1 <- data.frame(normalized_table, 
+                    "row_names" = r_n)
+} else if (norm == FALSE){
+  df1 <- data.frame(file_csv[,2:n_col], 
+                  "row_names" = r_n)
+}
+df2 <- melt(df1,"row_names")
+g <- ggplot(data=df2, aes(x=variable, y=value, group=row_names)) +
+  geom_line(aes(color=row_names))+ ylab("# reads") +
+  xlab("samples")+ theme(legend.title = element_blank(), axis.text.x = element_blank()) + ggtitle(tools::file_path_sans_ext(file_name))
+g 
+```
+
+# Plotting just one species, ordered by Date
+
+```{r}
+#reading the file with the dates (see example above)
+sample_dates <- read.csv(file=label_file, header=TRUE, sep = ",") %>% select(c(SAMPLE_NAME, Date))
+
+file_csv <- read.csv(file=paste(path_result, file_name, sep = ""), header=TRUE, row.names = 1)
+n_col <- ncol(file_csv)-9
+n_row <- nrow(file_csv)
+r_n <- file_csv[,1]
+if (norm == TRUE){
+  normalized_table <- t(apply(file_csv[,2:n_col], 1, function(x)(x-min(x))/(max(x)-min(x))))
+  df1 <- data.frame(normalized_table, 
+                    "ASV_ID" = r_n)
+} else if (norm == FALSE){
+  df1 <- data.frame(file_csv[,2:n_col], 
+                    "ASV_ID" = r_n)
+}
+df2 <- melt(df1,"ASV_ID")
+colnames(df2) <- c("ASV_ID", "SAMPLE_NAME", "value")
+df_dates <- merge(df2, sample_dates, by.x = "SAMPLE_NAME")
+df_dates$Date <- as.Date(df_dates$Date, format = format_dates) 
+g <- ggplot(data=df_dates, aes(x=Date, y=value, group = ASV_ID, color=ASV_ID)) +
+  geom_line() + theme_bw() + 
+  theme(axis.text.x = element_text(angle = 45, hjust=1)) +
+  ylab("nr of reads") +
+  xlab("") +
+  theme(legend.position = "right") +scale_x_date(date_labels = "%Y %b %d") + theme(legend.title = element_blank()) 
+g 
+```
+
+# Plotting the entire directory. one file for each species
+
+The following chunk of code creates a directory in results called *plots*, then a new direcory called with the same name of *results_dir*. If norm = TRUE, then the new folder is called *results_dir*_normalized.
+
+```{r eval=FALSE}
+path_plots <- paste(path, "plots/", sep = "")
+dir.create(path_plots)
+path_plots <- paste(path, "plots/", results_dir, "/", sep = "")
+dir.create(path_plots)
+
+file_list <- list.files()
+ggplot_list <- list()
+i <- 1
+for (file_name in file_list){
+  file_csv <- read.csv(file=paste(path_result, file_name, sep = ""), header=TRUE, row.names = 1)
+  n_col = ncol(file_csv)-9
+  n_row = nrow(file_csv)
+  r_n <- file_csv[,1]
+  df1 <- data.frame(file_csv[,2:n_col], 
+                    "row_names" = r_n)
+  df2 <- melt(df1,"row_names")
+  g <- ggplot(data=df2, aes(x=variable, y=value, group=row_names)) +
+    geom_line(aes(color=row_names))+ ylab("# reads") +
+    xlab("samples")+ theme(legend.title = element_blank(), axis.text.x = element_blank()) + ggtitle(tools::file_path_sans_ext(file_name))
+  ggplot_list[[i]] = g
+  i <- i +1 
+  name_file <- paste(path_plots, tools::file_path_sans_ext(file_name), ".png", sep = "")
+  ggsave(name_file, width = 8, height = 4.5, dpi=500)
+  printing <- paste("saving plot for ", tools::file_path_sans_ext(file_name), sep = "")
+  print(printing)  
+}
+```
+
+
+# Plotting the entire directory, ordered by Date
+
+In this case the samples are also ordered by dates, as for a single plot above. 
+If norm = True, then the new folder is called *results_dir*_normalized_ordered_date, otherwise *results_dir*_ordered_date. 
+
+```{r eval=FALSE}
+sample_dates <- read.csv(file=label_file, header=TRUE, sep = ",") %>% select(c(SAMPLE_NAME, Date))
+
+path_plots <- paste(path, "plots/", sep = "")
+dir.create(path_plots)
+
+# creating a *results_dir*_normalized_ordered_date folder if norm = True, otherwise only a folder called  
+# *results_dir*_ordered_date inside plots.
+# Each plot is a different species with all the matching ASVs. 
+if (norm == TRUE){
+  path_plots <- paste(path, "plots/", results_dir,"_normalized_ordered_date/", sep = "")
+  dir.create(path_plots)
+} else if (norm == FALSE){
+  path_plots <- paste(path, "plots/", results_dir, "_ordered_date/", sep = "")
+  dir.create(path_plots)
+}
+
+file_list <- list.files()
+ggplot_list <- list()
+i = 1
+for (file_name in file_list){
+  
+  file_csv <- read.csv(file=paste(path_result, file_name, sep = ""), header=TRUE, row.names = 1)
+  n_col <- ncol(file_csv)-9
+  n_row <- nrow(file_csv)
+  r_n <- file_csv[,1]
+  if (norm == TRUE){
+    normalized_table <- t(apply(file_csv[,2:n_col], 1, function(x)(x-min(x))/(max(x)-min(x))))
+    df1 <- data.frame(normalized_table, 
+                      "ASV_ID" = r_n)
+  } else if (norm == FALSE){
+    df1 <- data.frame(file_csv[,2:n_col], 
+                      "ASV_ID" = r_n)
+  }
+  df2 <- melt(df1,"ASV_ID")
+  colnames(df2) <- c("ASV_ID", "SAMPLE_NAME", "value")
+  df_dates <- merge(df2, sample_dates, by.x = "SAMPLE_NAME")
+  
+  df_dates$Date <- as.Date(df_dates$Date, format = format_dates) 
+  
+  g <- ggplot(data=df_dates, aes(x=Date, y=value, group = ASV_ID, color=ASV_ID)) +
+    geom_line() + theme_bw() + 
+    theme(axis.text.x = element_text(angle = 45, hjust=1)) +
+    ylab("nr of reads") +
+    xlab("") +
+    theme(legend.position = "right") +scale_x_date(date_labels = "%Y %b %d") + theme(legend.title = element_blank()) 
+  name_file <- paste(path_plots, tools::file_path_sans_ext(file_name), ".png", sep = "")
+  ggsave(name_file, width = 8, height = 4.5, dpi=500)
+  printing <- paste("saving plot for ", tools::file_path_sans_ext(file_name), sep = "")
+  print(printing)
+}
 
 ```
 
+# Plotting the entire directory + ordering by Order
+
+In this chunk of code we don't order by Date, but by the order specified in another column of label_file, called **Order**. In this column the order can be specified by cardinal numbers from 1 to the number of samples.
+
+![](/home/valentina_galeone/Desktop/example2.png)
+
+```{r eval = FALSE}
+sample_order <- read.csv(file=label_file, header=TRUE, sep = ",") %>% select(c(SAMPLE_NAME, Order))
+
+path_plots <- paste(path, "plots/", sep = "")
+dir.create(path_plots)
+
+# creating a *results_dir*_normalized_ordered folder if norm = True, otherwise only a folder called  
+# *results_dir*_ordered inside plots.
+# Each plot is a different species with all the matching ASVs. 
+if (norm == TRUE){
+  path_plots <- paste(path, "plots/", results_dir,"_normalized_ordered/", sep = "")
+  dir.create(path_plots)
+} else if (norm == FALSE){
+  path_plots <- paste(path, "plots/", results_dir, "_ordered/", sep = "")
+  dir.create(path_plots)
+}
+
+file_list <- list.files()
+ggplot_list <- list()
+i = 1
+for (file_name in file_list){
+  file_csv <- read.csv(file=paste(path_result, file_name, sep = ""), header=TRUE, row.names = 1)
+  n_col <- ncol(file_csv)-9
+  n_row <- nrow(file_csv)
+  r_n <- file_csv[,1]
+    if (norm == TRUE){
+    normalized_table <- t(apply(file_csv[,2:n_col], 1, function(x)(x-min(x))/(max(x)-min(x))))
+    df1 <- data.frame(normalized_table, 
+                      "ASV_ID" = r_n)
+  } else if (norm == FALSE){
+    df1 <- data.frame(file_csv[,2:n_col], 
+                      "ASV_ID" = r_n)
+  }
+  df2 <- melt(df1,"ASV_ID")
+  colnames(df2) <- c("ASV_ID", "SAMPLE_NAME", "value")
+  df_order <- merge(df2, sample_order, by.x = "SAMPLE_NAME")
+  
+  g <- ggplot(data=df_order, aes(x=Order, y=value, group = ASV_ID, color=ASV_ID)) +
+    geom_line() + theme_bw() + 
+    theme(axis.text.x = element_text(angle = 45, hjust=1)) +
+    ylab("nr of reads") +
+    xlab("") +
+    theme(legend.position = "right")  + theme(legend.title = element_blank()) 
+  name_file <- paste(path_plots, tools::file_path_sans_ext(file_name), ".png", sep = "")
+  ggsave(name_file, width = 8, height = 4.5, dpi=500)
+  printing <- paste("saving plot for ", tools::file_path_sans_ext(file_name), sep = "")
+  print(printing)
+}
+
+```
+ 
+The following plot corresponds to a single species (*Aulacoseira_granulata.csv*). The code to obtain one plot ordered by *Order* is not included in the script. 
+
+```{r echo=FALSE}
+sample_order <- read.csv(file=label_file, header=TRUE, sep = ",") %>% select(c(SAMPLE_NAME, Order))
+
+file_name <- "Aulacoseira_granulata.csv"
+file_csv <- read.csv(file=paste(path_result, file_name, sep = ""), header=TRUE, row.names = 1)
+n_col <- ncol(file_csv)-9
+n_row <- nrow(file_csv)
+r_n <- file_csv[,1]
+  if (norm == TRUE){
+    normalized_table <- t(apply(file_csv[,2:n_col], 1, function(x)(x-min(x))/(max(x)-min(x))))
+    df1 <- data.frame(normalized_table, 
+                      "ASV_ID" = r_n)
+  } else if (norm == FALSE){
+    df1 <- data.frame(file_csv[,2:n_col], 
+                      "ASV_ID" = r_n)
+  }
+df2 <- melt(df1,"ASV_ID")
+colnames(df2) <- c("ASV_ID", "SAMPLE_NAME", "value")
+df_order <- merge(df2, sample_order, by.x = "SAMPLE_NAME")
+
+g <- ggplot(data=df_order, aes(x=Order, y=value, group = ASV_ID, color=ASV_ID)) +
+  geom_line() + theme_bw() + 
+  theme(axis.text.x = element_text(angle = 45, hjust=1)) +
+  ylab("nr of reads") +
+  xlab("") +
+  theme(legend.position = "right")  + theme(legend.title = element_blank()) 
+g
+```
+
+
+# Ordering by Order + separating by Group
+
+To show the output of this last chunk of code, a new dataset is imported. The path and the options at the beginning of the file should be changed: 
+
+```{r}
+path <- "/home/valentina_galeone/Desktop/github_rep/metabarcoding/results/"
+results_dir <- "poland_seqtab_ASV"
+path_result <- paste(path, results_dir, "/", sep = "")
+setwd(path_result)
+norm <- TRUE
+label_file <- "/home/valentina_galeone/Desktop/github_rep/metabarcoding/Data/sample_labels_poland.csv"
+format_dates = "%d/%m/%y" 
+```
+
+Here we are ordering by a **Order** column, and also separating the plots as it is defined in a **Group** column. 
+![](/home/valentina_galeone/Desktop/example3.png)
+
+```{r eval = FALSE}
+sample_order <- read.csv(file=label_file, header=TRUE, sep = ",") %>% select(c(SAMPLE_NAME, Group, Order))
+
+path_plots <- paste(path, "plots/", sep = "")
+dir.create(path_plots)
+
+# creating a *results_dir*_normalized_ordered folder if norm = True, otherwise only a folder called  
+# *results_dir*_ordered inside plots.
+# Each plot is a different species with all the matching ASVs. 
+if (norm == TRUE){
+  path_plots <- paste(path, "plots/", results_dir,"_normalized_grouped/", sep = "")
+  dir.create(path_plots)
+} else if (norm == FALSE){
+  path_plots <- paste(path, "plots/", results_dir, "_grouped/", sep = "")
+  dir.create(path_plots)
+}
+
+file_list <- list.files()
+ggplot_list <- list()
+i = 1
+for (file_name in file_list){
+  file_csv <- read.csv(file=paste(path_result, file_name, sep = ""), header=TRUE, row.names = 1)
+  n_col <- ncol(file_csv)-9
+  n_row <- nrow(file_csv)
+  r_n <- file_csv[,1]
+    if (norm == TRUE){
+    normalized_table <- t(apply(file_csv[,2:n_col], 1, function(x)(x-min(x))/(max(x)-min(x))))
+    df1 <- data.frame(normalized_table, 
+                      "ASV_ID" = r_n)
+  } else if (norm == FALSE){
+    df1 <- data.frame(file_csv[,2:n_col], 
+                      "ASV_ID" = r_n)
+  }
+  df2 <- melt(df1,"ASV_ID")
+  colnames(df2) <- c("ASV_ID", "SAMPLE_NAME", "value")
+  df_group <- merge(df2, sample_order, by.x = "SAMPLE_NAME")
+  all_df <- split(df_group, df_group$Group)
+  
+  i <- 1
+  for (single_df in all_df){
+    g <- ggplot(data=single_df, aes(x=Order, y=value, group = ASV_ID, color=ASV_ID)) +
+      geom_line() + theme_bw() + 
+      theme(axis.text.x = element_text(angle = 45, hjust=1)) +
+      ylab("nr of reads") +
+      xlab("") +
+      theme(legend.position = "right") + theme(legend.title = element_blank())    
+    ggplot_list[[i]] <- g
+    i <- i + 1 
+  }
+  name_file <- paste(path_plots, tools::file_path_sans_ext(file_name), ".png", sep = "")
+  ggsave(paste(name_file, ".png", sep = ""), do.call("arrangeGrob", c(ggplot_list, ncol = 1)))
+  printing <- paste("saving plot for ", tools::file_path_sans_ext(file_name), sep = "")
+  print(printing)
+}
+
+```
+
+Also in this case, only one species is shown in the following plot
+
+```{r echo=FALSE}
+sample_order <- read.csv(file=label_file, header=TRUE, sep = ",") %>% select(c(SAMPLE_NAME, Group, Order))
+
+file_name <- "Aulacoseira_granulata.csv"
+ggplot_list <- list()
+file_csv <- read.csv(file=paste(path_result, file_name, sep = ""), header=TRUE, row.names = 1)
+n_col <- ncol(file_csv)-9
+n_row <- nrow(file_csv)
+r_n <- file_csv[,1]
+  if (norm == TRUE){
+  normalized_table <- t(apply(file_csv[,2:n_col], 1, function(x)(x-min(x))/(max(x)-min(x))))
+  df1 <- data.frame(normalized_table, 
+                    "ASV_ID" = r_n)
+} else if (norm == FALSE){
+  df1 <- data.frame(file_csv[,2:n_col], 
+                    "ASV_ID" = r_n)
+}
+df2 <- melt(df1,"ASV_ID")
+colnames(df2) <- c("ASV_ID", "SAMPLE_NAME", "value")
+df_group <- merge(df2, sample_order, by.x = "SAMPLE_NAME")
+all_df <- split(df_group, df_group$Group)
+
+i <- 1
+  for (single_df in all_df){
+  g <- ggplot(data=single_df, aes(x=Order, y=value, group = ASV_ID, color=ASV_ID)) +
+    geom_line() + theme_bw() + 
+    theme(axis.text.x = element_text(angle = 45, hjust=1)) +
+    ylab("nr of reads") +
+    xlab("") +
+    theme(legend.position = "right") + theme(legend.title = element_blank())    
+  
+  ggplot_list[[i]] <- g
+  i <- i + 1 
+  }
+
+grid.arrange(ggplot_list[[1]], ggplot_list[[2]], ncol=1, top = tools::file_path_sans_ext(file_name))
+
+```
