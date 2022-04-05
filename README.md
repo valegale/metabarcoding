@@ -3,7 +3,7 @@
 This repository is a collection of python and R scripts, which together consitute a pipeline for the analysis of ASVs data from the software DADA2 (https://github.com/benjjneb/dada2). 
 Amplicon Sequence Variants (ASVs) are short sequences of DNA that are recovered from a high-throughput marker gene analysis. DADA2 attempts at associating a taxonomy classification on a species level to each ASVs. 
 
-For each species, multiple distint ASVs can be matched by the software. With these scripts it is possible to group (in different files) ASVs that matches to the same species (python scripts), and start an analysis on a species level (R scripts).
+For each species, multiple distint ASVs can be matched by the software. With these scripts it is possible to group (in different files) ASVs that matches to the same species (python scripts), and start an analysis on a species level (R script).
 
 This README file provides an overwiev of the repository and contains instructions regarding the usage of the scripts. 
 
@@ -60,7 +60,7 @@ After this, two frequency plots are shown.
 In the first one, we can have an idea of how many ASVs are generally assigned to the same species. For x=1, just a unique ASVs was associated to the species. 
 As it is likely that x=1 occurs most of the time, in the second plot the minimum value for x is 2, in this way it is possible to visualize only *not-unique* ASVs. 
 <br>
-Finally, two other plots are displayed. This plot analyze how the parameter *min_reads* influences the number of ASVs in the result. As this parameter varies, the number of files (third plot) and the total number of ASVs (fourth plot) change as well.   
+Finally, two other plots are displayed. Thess plots analyze how the parameter *min_reads* influences the number of ASVs in the result. As this parameter varies, the number of files (third plot) and the total number of ASVs (fourth plot) change as well.   
 
 `usage` asvs_statistics.py [-h] [-sp] [-sc] file_name min_reads
 
@@ -78,7 +78,20 @@ min_reads    -     minimum number of reads for an ASVs (summing over all samples
 
 ---
 
+## simply_collapsing.py 
+
+This file collapses together all the rows assigned to the same species, such that the reads count for each sample are summed and the fragment sequences are not showed anymore. After collapsing together these rows, the new rows are ordered again such that in the output file the rows are ordered from the most to the least abundant taxon, as in the original Dada2 output. The resulting file is saved in the results folder (as \**file_name*\*_collapsed.csv). 
+
+`usage` simply_collapsing_ASVs.py [-h] file_name
+
+`positional arguments`:
+
+  file_name - name of the file
+
+---
+
 ## plot_directory_ASVS.R
-check **test_plots.html**
-(work in progress here)
+
+check the file **test_plots.html** for the R script. 
+
 
