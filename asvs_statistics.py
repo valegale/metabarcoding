@@ -124,15 +124,15 @@ delim = ";" if args.semicolon else ","
 
 unique_species = DictionaryUniqueSpecies(args.file_name, args.min_reads, delim)
 
-print ("Number of unique species: %s" %(len(unique_species)))
+print ("Number of identified species: %s" %(len(unique_species)))
 
 frequency, count, count_sp =  statistics(unique_species)
 
 if (str(frequency) == str([0])):
 	print ("check -sc to modify the delimiter (empty list of frequencies")
 else:
-	print ("Number of species with more than one ASV (total number of reads > %s): %s" %(args.min_reads,count))
-	print ("Number of species with more than one ASV, excluding sp. (total number of reads > %s): %s" %(args.min_reads, count_sp))
+	print ("Number of identified species with more than one ASV (total number of reads > %s): %s" %(args.min_reads,count))
+	print ("Number of identified species with more than one ASV, excluding sp. (total number of reads > %s): %s" %(args.min_reads, count_sp))
 
 	plot_frequency(frequency)
 	plot_frequency_multipleASVs(frequency)

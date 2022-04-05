@@ -11,6 +11,7 @@ This README file provides an overwiev of the repository and contains instruction
 
 ## adding_ASV_ID.py
 Starting from the DADA2 output, this file adds a second column (after the one with the DNA sequences) with the ASV_ID. For example, if the DADA2 output file with file_name = *output_dada2.csv* has 100 rows, than the new file is called *output_dada2_ASV.csv* and in the second column a label that ranges from *ASV_001* to *ASV_100* is stored. 
+**IMPORTANT** the output ASV_ID file is generated inside a folder called *Data*. If this folder is not already present, this should be created manually in the same folder of this script. 
 
 `usage` : adding_ASV_ID.py [-h] [-sc] file_name
 
